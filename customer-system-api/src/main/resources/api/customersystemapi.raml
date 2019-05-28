@@ -1,0 +1,97 @@
+#%RAML 1.0
+version: v1
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/3555ee02-d344-4038-a389-15c6cbfebbad/ # 
+title: CustomerSystemAPI
+
+/systemAPI/customer:
+  post:
+    body:
+      application/json:
+        example:
+          {
+            "firstName": "Abhinav",
+            "lastName": "Sharma",
+            "address": [{
+              "line1": "Line 1",
+              "line2": "Line 2",
+              "city": "Pune",
+              "zipcode": "411057",
+              "label": "work"
+            },
+            {
+              "line1": "Line 1",
+              "line2": "Line 2",
+              "city": "Pune",
+              "zipcode": "411057",
+              "label": "home"
+            },
+            {
+              "line1": "Line 1",
+              "line2": "Line 2",
+              "city": "Pune",
+              "zipcode": "411057",
+              "label": "communication"
+            }],
+            "dob": "01/09/1991",
+            "gender": "M",
+            "email": "Abhinav.Sharma@capita.co.uk"
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              {
+                "message": "Record created successfully."
+              }
+      500:
+        body:
+          application/json:
+            example:
+              {
+                "message": "Internal Server Error."
+              }
+
+  /{customer_id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                {
+                  "customerId": "1111",
+                  "firstName": "Abhinav",
+                  "lastName": "Sharma",
+                  "address": [{
+                    "line1": "Line 1",
+                    "line2": "Line 2",
+                    "city": "Pune",
+                    "zipcode": "411057",
+                    "label": "work"
+                  },
+                  {
+                    "line1": "Line 1",
+                    "line2": "Line 2",
+                    "city": "Pune",
+                    "zipcode": "411057",
+                    "label": "home"
+                  },
+                  {
+                    "line1": "Line 1",
+                    "line2": "Line 2",
+                    "city": "Pune",
+                    "zipcode": "411057",
+                    "label": "communication"
+                  }],
+                  "dob": "01/09/1991",
+                  "gender": "M",
+                  "email": "Abhinav.Sharma@capita.co.uk"
+                }
+        400:
+          body:
+            application/json:
+              example:
+                {
+                  "message": "Bad request."
+                }
