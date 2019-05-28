@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <http:listener-config name="customersystemapi-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+        <http:listener-connection host="0.0.0.0" port="7070" />
     </http:listener-config>
     <apikit:config name="customersystemapi-config" raml="customersystemapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <flow name="customersystemapi-main">
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="e5d4776f-2a4e-4ab7-95c3-2602f8d56b08" >
+		<db:mssql-connection host="dbs-poc-euw-mspoc002.database.windows.net" user="mspoc002" password="qInmyp7h" databaseName="db_poc_euw_mspoc002" />
+	</db:config>
+	<flow name="customersystemapi-main">
         <http:listener config-ref="customersystemapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:response>
             <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:body><![CDATA[#[payload]]]></http:body>
             </http:error-response>
         </http:listener>
         <apikit:router config-ref="customersystemapi-config" />
@@ -124,49 +127,24 @@ output application/json
         </error-handler>
     </flow>
     <flow name="get:\systemAPI\customer\(customer_id):customersystemapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
-            <ee:variables>
-                <ee:set-variable variableName="customer_id">attributes.uriParams.customer_id</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
+        <set-variable value="#[%dw 2.0
+output application/java
 ---
-{
-  customerId: "1111",
-  firstName: "Abhinav",
-  lastName: "Sharma",
-  address: [
-    {
-      line1: "Line 1",
-      line2: "Line 2",
-      city: "Pune",
-      zipcode: "411057",
-      label: "work"
-    }, 
-    {
-      line1: "Line 1",
-      line2: "Line 2",
-      city: "Pune",
-      zipcode: "411057",
-      label: "home"
-    }, 
-    {
-      line1: "Line 1",
-      line2: "Line 2",
-      city: "Pune",
-      zipcode: "411057",
-      label: "communication"
-    }
-  ],
-  dob: "01/09/1991",
-  gender: "M",
-  email: "Abhinav.Sharma@capita.co.uk"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+attributes.uriParams.customer_id]" doc:name="Set Variable" doc:id="1a3757df-88f1-48a4-b865-9c4a42f6ff92" variableName="customerId"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a87f899d-6469-4cbf-a15f-e82f98ca4351" message="listening to get ++ #[vars.customerId]"/>
+		<db:select doc:name="Select Customer" doc:id="167ca933-bd62-413c-ba0b-36b3d7dbfe89" config-ref="Database_Config" target="CustomerData">
+			<db:sql >select * from customer
+where ID = :id</db:sql>
+			<db:input-parameters ><![CDATA[#['id': vars.customerId]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="527e24b4-4918-4ac8-b7bd-3422a33df1f0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[output application/json
+---
+vars.CustomerData]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="cbeccede-8038-42f6-af66-8106669c33d0" message="#[payload]"/>
     </flow>
     <flow name="post:\systemAPI\customer:customersystemapi-config">
         <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
