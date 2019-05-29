@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
     <http:listener-config name="customersystemapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="7070" />
     </http:listener-config>
@@ -9,6 +10,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
     <db:config name="Database_Config" doc:name="Database Config" doc:id="e5d4776f-2a4e-4ab7-95c3-2602f8d56b08" >
 		<db:mssql-connection host="dbs-poc-euw-mspoc002.database.windows.net" user="mspoc002" password="qInmyp7h" databaseName="db_poc_euw_mspoc002" />
 	</db:config>
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="24c42a2f-d2ff-4c9e-9878-08c009110e4e" >
+		<email:smtp-connection host="smtp.sendgrid.net" user="azure_cfae296f3c2574deb7e64b7dc4b345cf@azure.com" password="jycAW3941WNY" />
+	</email:smtp-config>
 	<flow name="customersystemapi-main">
         <http:listener config-ref="customersystemapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -147,7 +151,42 @@ vars.CustomerData]]></ee:set-payload>
 		<logger level="INFO" doc:name="Logger" doc:id="cbeccede-8038-42f6-af66-8106669c33d0" message="#[payload]"/>
     </flow>
     <flow name="post:\systemAPI\customer:customersystemapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+        <logger level="INFO" doc:name="Logger1" doc:id="1f68d663-c3e9-44f3-a398-7c42caced79f" message="Logger1--------------------- ++ #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Set Variable Payload to var" doc:id="f814eb13-3ea2-44f6-9014-fc79187367f3" variableName="requestPayload"/>
+		<db:insert doc:name="Insert" doc:id="1a39aff4-2943-449d-944b-7ca62d4b072b" config-ref="Database_Config" target="insertPayload" autoGenerateKeys="true">
+			<db:sql>INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)
+VALUES (:firstName, :lastName, :dob, :gender, :email)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'firstName': payload.firstName,
+'lastName': payload.lastName,
+'dob': payload.dob,
+'gender': payload.gender,
+'email': payload.email
+}]]]></db:input-parameters>
+			<db:auto-generated-keys-column-indexes >
+				<db:auto-generated-keys-column-index value="0" />
+			</db:auto-generated-keys-column-indexes>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger2" doc:id="07ad7ebd-ddc0-4ae3-9f4b-57ec3d212154" message="Logger2--------------------- ++ #[vars.requestPayload] ---------------------#[vars.insertPayload.generatedKeys]"/>
+		<db:insert doc:name="Insert" doc:id="3a826628-ab9b-4db9-9f47-ffb8a7c17f7a" config-ref="Database_Config">
+			<db:sql>INSERT INTO ADDRESS (CUST_ID, ADDR_LN_1, ADDR_LN_2, CITY, ZIPCODE, LABEL)
+VALUES (:custid, :line1, :line2, :city, :zipcode, :label)</db:sql>
+				<db:input-parameters><![CDATA[#[{
+	'custid': vars.insertPayload.generatedKeys.GENERATED_KEYS,
+	'line1': vars.requestPayload.address.line1,
+	'line2': vars.requestPayload.address.line2,
+	'city': vars.requestPayload.address.city,
+	'zipcode': vars.requestPayload.address.zipcode,
+	'label': vars.requestPayload.address.label
+}]]]></db:input-parameters>
+		</db:insert>
+		<email:send doc:name="Send" doc:id="de1e5412-f87f-4954-9f33-b3300b3db509" config-ref="Email_SMTP" fromAddress="Abhinav.Sharma@capita.co.uk" subject="Successfully registered!" toAddresses="#[[vars.requestPayload.email]]">
+			<email:reply-to-addresses />
+			<email:body contentType="text/html" encoding="UTF-8">
+				<email:content ><![CDATA[#["Thank you for registering"]]]></email:content>
+			</email:body>
+		</email:send>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7ecd9de9-e314-4f94-9ddc-0e0f14005b53">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
