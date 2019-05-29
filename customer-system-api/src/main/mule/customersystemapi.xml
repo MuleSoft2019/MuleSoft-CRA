@@ -4,7 +4,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
     <http:listener-config name="customersystemapi-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="7070" />
+        <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
     <apikit:config name="customersystemapi-config" raml="customersystemapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="e5d4776f-2a4e-4ab7-95c3-2602f8d56b08" >
@@ -153,8 +153,8 @@ vars.CustomerData]]></ee:set-payload>
     <flow name="post:\systemAPI\customer:customersystemapi-config">
         <logger level="INFO" doc:name="Logger1" doc:id="1f68d663-c3e9-44f3-a398-7c42caced79f" message="Logger1--------------------- ++ #[payload]"/>
 		<set-variable value="#[payload]" doc:name="Set Variable Payload to var" doc:id="f814eb13-3ea2-44f6-9014-fc79187367f3" variableName="requestPayload"/>
-		<db:insert doc:name="Insert" doc:id="1a39aff4-2943-449d-944b-7ca62d4b072b" config-ref="Database_Config" target="insertPayload" autoGenerateKeys="true">
-			<db:sql>INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)
+		<db:insert doc:name="Insert" doc:id="5d243eba-7cbb-4304-a741-f21295e97c2b" config-ref="Database_Config" autoGenerateKeys="true" target="insertPayload">
+			<db:sql >INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)
 VALUES (:firstName, :lastName, :dob, :gender, :email)</db:sql>
 			<db:input-parameters ><![CDATA[#[{
 'firstName': payload.firstName,
