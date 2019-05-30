@@ -1,0 +1,14 @@
+{
+	"firstName":"tom1",
+	"lastName":"hardy",
+	"dob":"10/03/1984",
+	"gender":"M",
+	"email":"abc@gamil.com",
+	"address": {
+		"line1":"xyz",
+		"line2":"hadapsar",
+		"city":"Pune",
+		"zipcode":411028,
+		"label": "maharashtra"
+	}
+}

@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="Customer" format="json">
+      <types:shape format="weave" example="examples/json.txt"><![CDATA[%dw 2.0
+
+type Customer = {|
+  firstName: String, 
+  lastName: String, 
+  dob: String, 
+  gender: String, 
+  email: String, 
+  address: {|
+    line1: String, 
+    line2: String, 
+    city: String, 
+    zipcode: Number {"typeId": "int"}, 
+    label: String
+  |}
+|} {"example": "{\"firstName\":\"tom1\",\"lastName\":\"hardy\",\"dob\":\"10\/03\/1984\",\"gender\":\"M\",\"email\":\"abc@gamil.com\",\"address\":{\"line1\":\"xyz\",\"line2\":\"hadapsar\",\"city\":\"Pune\",\"zipcode\":411028,\"label\":\"maharashtra\"}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="postcode" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="CustomerOutput" format="json">
+      <types:shape format="weave" example="examples/json-1.txt"><![CDATA[%dw 2.0
+
+type CustomerOutput = {|
+  firstName: String, 
+  lastName: String, 
+  dob: String, 
+  gender: String, 
+  email: String, 
+  address: {|
+    line1: String, 
+    line2: String, 
+    city: String, 
+    zipcode: Number {"typeId": "int"}, 
+    label: String
+  |}
+|} {"example": "{\"firstName\":\"tom1\",\"lastName\":\"hardy\",\"dob\":\"10\/03\/1984\",\"gender\":\"M\",\"email\":\"abc@gamil.com\",\"address\":{\"line1\":\"xyz\",\"line2\":\"hadapsar\",\"city\":\"Pune\",\"zipcode\":411028,\"label\":\"maharashtra\"}}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#8a530260-e21d-4e44-ab28-e39e5a09fdd5">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Customer"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#138ef836-1ce0-4919-9088-7e89ead98c54">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Customer"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+    <types:operation-declaration>
+      <types:inputs>
+        <types:parameter name="value" type="CustomerOutput"/>
+      </types:inputs>
+    </types:operation-declaration>
+  </types:enrichment>
+  <types:enrichment select="#ee1e7d59-f82b-49b7-8388-2c72267b6cc8">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Customer"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+    <types:operation-declaration>
+      <types:inputs>
+        <types:parameter name="value" type="CustomerOutput"/>
+      </types:inputs>
+    </types:operation-declaration>
+  </types:enrichment>
+</types:mule>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:azure-storage="http://www.mulesoft.org/schema/mule/azure-storage"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/azure-storage http://www.mulesoft.org/schema/mule/azure-storage/current/mule-azure-storage.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="162593f6-8142-4038-9859-780f0765d4c6" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="daac6e6d-436d-4cb9-841a-d57c0b872366" >
+		<jms:active-mq-connection username="admin" password="admin">
+			<jms:caching-strategy >
+				<jms:no-caching />
+			</jms:caching-strategy>
+			<jms:factory-configuration brokerUrl="tcp://13.95.5.15:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="79407201-af4b-4ff0-8bc4-eac683a49975" >
+		<file:connection workingDir="C:\Queue" />
+	</file:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="f17de0df-b005-4959-9ce2-82cdb3d7b91d" >
+		<file:connection workingDir="C:\Queue" />
+	</file:config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="014bb608-38ae-4954-b786-b383cedbb2bf" >
+		<http:request-connection protocol="HTTPS" host="mulewebclient.azurewebsites.net" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="e7280efd-02e5-4a02-9684-01b0cad3e8e5" >
+		<http:request-connection host="customer-system-api.us-w1.cloudhub.io"/>
+	</http:request-config>
+	<jms:config name="ErrorQueue" doc:name="JMS Config" doc:id="4a701aaa-df9d-4a42-8d60-f95ff5b816be" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:caching-strategy >
+				<jms:no-caching />
+			</jms:caching-strategy>
+			<jms:factory-configuration brokerUrl="tcp://13.95.5.15:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="JMSPublishToTestJMS" doc:id="edb5b98a-578c-48c3-a9e9-7a57dc1dd2e8" >
+		<http:listener doc:name="Listener" doc:id="c1f74b73-2b2b-4611-b60a-4244351e001b" path="/mq" config-ref="HTTP_Listener_config" outputMimeType="application/json"/>
+		<jms:publish doc:name="JMSPublish" doc:id="f670c925-0938-468b-9c16-4964af1e5ebd" config-ref="JMS_Config" destination="inbound-queue-poc1" timeToLiveUnit="MINUTES" sendCorrelationId="AUTO"/>
+		<set-payload value="Message Published" doc:name="Set Payload" doc:id="a546a309-af92-4f16-81db-5588b0cd60ab" />
+	</flow>
+	<flow name="ProcessAPI" doc:id="b2d5bc47-10e0-423f-abfc-1b3ad7efcd2c" >
+		<jms:listener doc:name="JMS Consumer" doc:id="8b1021b8-3c77-4dd7-b110-ec8b642b8fb4" config-ref="JMS_Config" destination="inbound-queue-poc1">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:listener>
+		<set-variable value="#[%dw 2.0
+output application/json
+---
+{
+	firstName: payload.firstName,
+	lastName: payload.lastName,
+	dob: payload.dob,
+	gender: payload.gender,
+	email: payload.email,
+	address: {
+		line1: payload.address.line1,
+		line2: payload.address.line2,
+		city: payload.address.city,
+		zipcode: payload.address.zipcode,
+		label: payload.address.label
+	}
+}]" doc:name="OriginalMessage" doc:id="ee1e7d59-f82b-49b7-8388-2c72267b6cc8" variableName="OriginalMessage" />
+		<logger level="INFO" doc:name="Logger" doc:id="b632dacf-433e-42b4-a54d-17bf499280cf" message="Original Message-----#[message]"/>
+		<http:request method="GET" doc:name="Request" doc:id="1fe18a78-4154-4a5c-966f-3e0bc679b07b" config-ref="HTTP_Request_configuration" path="/api/customer/{postcode}/validate">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"postcode" : vars.OriginalMessage.address.zipcode
+}]]]></http:uri-params>
+		</http:request>
+		<set-variable value="#[message.payload]" doc:name="ValidationResult" doc:id="5d08fb67-8017-426e-91cf-b99beee6da58" variableName="valid" mimeType="text/plain"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c8652648-fe70-4e2d-82ab-6d9b35ef6c82" message="Business validation --- #[vars.valid]"/>
+		<choice doc:name="Choice" doc:id="40e6dda5-8737-4da1-b9cd-2ef6f2d07235" >
+			<when expression="#[vars.valid =='true']">
+				<set-payload value="#[vars.OriginalMessage]" doc:name="Set Payload" doc:id="eaaafac4-f13d-4863-a203-120489e7f480" />
+				<logger level="INFO" doc:name="Logger" doc:id="8de48fd4-27d2-421f-817e-06a2a573a006" message="After Setting payload ------ #[payload]"/>
+				<http:request method="POST" doc:name="Request" doc:id="33dba6e6-72e9-4a17-a0e7-d7757db8ad02" config-ref="HTTP_Request_configuration1" path="/api/systemAPI/customer" outputMimeType="application/json" followRedirects="true"/>
+				<logger level="INFO" doc:name="Logger" doc:id="5552cb7f-a322-4c56-ae1d-f34571c7d3a1" message="Response from System API --------#[payload]"/>
+			</when>
+			<when expression="#[vars.valid =='false']">
+				<set-payload value="#[vars.OriginalMessage]" doc:name="Set Payload" doc:id="c4393379-e2ef-4caf-a5e5-0606c4012f47" />
+				<jms:publish doc:name="ErrorQueue" doc:id="65200f73-02fe-4819-b983-bdc16ebb2be9" config-ref="ErrorQueue" destination="inbound-queue-poc1-error"/>
+				<logger level="INFO" doc:name="Logger" doc:id="acedfa7b-53ce-4f86-9e59-fe28864f5b89" message="Message submitted to error queue"/>
+			</when>
+		</choice>
+	</flow>
+</mule>
