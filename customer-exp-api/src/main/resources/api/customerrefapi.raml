@@ -1,0 +1,74 @@
+#%RAML 1.0
+version: v1
+title: CustomerRefAPI
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/3555ee02-d344-4038-a389-15c6cbfebbad/ # 
+
+
+/expAPI/customer:
+ post:
+  body:
+   application/json:
+    example:
+     {
+      "firstName": "Abhinav",
+      "lastName": "Sharma",
+      "address": {
+        "line1": "Line 1",
+        "line2": "Line 2",
+        "city": "Pune",
+        "zipcode": "411057",
+        "label": "work"
+     },     
+
+    "dob": "01/09/1991",
+    "gender": "M",
+    "email" : "mnb@gmail.com"
+    }
+  responses:
+    201:
+     body:
+      application/json:
+       example:
+          {
+           "message": "Message Saved."
+          }
+    400:
+     body:
+      application/json:
+       example:
+        {
+         "message": "Duplicate record found."
+        }
+
+/{customer_id}:
+ get:
+  responses:
+   200:
+    body:
+     application/json:
+      example:
+       {
+      "firstName": "Abhinav",
+      "lastName": "Sharma",
+      "address": {
+        "line1": "Line 1",
+        "line2": "Line 2",
+        "city": "Pune",
+        "zipcode": "411057",
+        "label": "work"
+     },
+
+    "dob": "01/09/1991",
+    "gender": "M",
+    "email" : "mnb@gmail.com"
+    }
+      
+
+
+   404:
+    body:
+     application/json:
+      example:
+       {
+        "message": "Record not found."
+       }
