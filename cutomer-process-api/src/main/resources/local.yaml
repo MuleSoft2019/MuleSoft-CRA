@@ -1,0 +1,26 @@
+api:
+  http:
+    host: "localhost"
+    port: "8085"
+    
+db:
+  host: "dbs-poc-euw-mspoc002.database.windows.net"
+  user: "mspoc002"
+  password: "qInmyp7h"
+  
+smtp:
+  host: "smtp.sendgrid.net"
+  user: "azure_cfae296f3c2574deb7e64b7dc4b345cf@azure.com"
+  password: "jycAW3941WNY"
+  
+jms:
+  brokerUrl: "tcp://localhost:61616"
+  inboundQueueName: "inbound-queue-poc1"
+  errorQueueName: "inbound-queue-poc1-error"
+  
+url:
+  businessService: "mulewebclient.azurewebsites.net"
+  experienceApi: "customer-exp-api.us-e1.cloudhub.io"
+  processApi: "customer-reg-process-api.us-w1.cloudhub.io"
+  systemApi: "localhost"
+  
