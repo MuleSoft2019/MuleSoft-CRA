@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 		<http:request-connection protocol="HTTPS" host="${url.businessService}" />
 	</http:request-config>
 	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="e7280efd-02e5-4a02-9684-01b0cad3e8e5" >
-		<http:request-connection host="${url.systemApi}" port="7070"/>
+		<http:request-connection host="${url.systemApi}"/>
 	</http:request-config>
 	<jms:config name="ErrorQueue" doc:name="JMS Config" doc:id="4a701aaa-df9d-4a42-8d60-f95ff5b816be" >
 		<jms:active-mq-connection username="admin" password="admin" >

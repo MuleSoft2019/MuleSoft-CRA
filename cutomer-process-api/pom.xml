@@ -39,6 +39,7 @@
                             <artifactId>activemq-kahadb-store</artifactId>
                         </sharedLibrary>
                     </sharedLibraries>
+                <classifier>mule-application</classifier>
                 </configuration>
 			</plugin>
 		</plugins>
