@@ -69,7 +69,9 @@
 	<profiles>
 		<profile>
 			<id>cloudhub</id>
-			<active>true</active>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
