@@ -130,6 +130,13 @@
             <classifier>mule-plugin</classifier>
             <scope>test</scope>
         </dependency>
+    	<!-- <dependency>
+            <groupId>com.mycompany</groupId>
+            <artifactId>customer-domain</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <classifier>mule-domain</classifier>
+            <scope>provided</scope>
+        </dependency> -->
     </dependencies>
 
 	<repositories>
