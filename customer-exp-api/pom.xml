@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>dca5c6ff-6213-4458-bf2e-4c816d0f2459</groupId>
-	<artifactId>customer-exp-api-rtf</artifactId>
+	<artifactId>customer-exp-api</artifactId>
 	<version>1.0.4</version>
 	<packaging>mule-application</packaging>
 
-	<name>customer-exp-api-rtf</name>
+	<name>customer-exp-api</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -127,7 +127,7 @@
 								<target>mspoc_capita_rtf</target>
 								<environment>Sandbox</environment>
 								<businessGroup>mspoc</businessGroup>
-								<provider>SERVER</provider>
+								<provider>MC</provider>
 								<properties>
 									<mule.env>${mule.env}</mule.env>
 								</properties>
