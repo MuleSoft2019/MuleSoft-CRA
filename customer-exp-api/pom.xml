@@ -131,10 +131,6 @@
 								<properties>
 									<mule.env>${mule.env}</mule.env>
 								</properties>
-								<deploymentSettings>
-									<cpuReserved>500m</cpuReserved>
-									<memoryReserved>800Mi</memoryReserved>
-								</deploymentSettings>
 							</runtimeFabricDeployment>
 						</configuration>
 						<executions>
