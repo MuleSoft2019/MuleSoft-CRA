@@ -34,7 +34,7 @@
 						<environment>Sandbox</environment>
 						<businessGroup>mspoc</businessGroup>
 						<properties>
-							<key>value</key>
+							<key>mule.env</key>
 							<env>${mule.env}</env>
 						</properties>
 					</cloudHubDeployment>
