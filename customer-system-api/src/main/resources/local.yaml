@@ -9,7 +9,7 @@ db:
   password: "qInmyp7h"
   
 jms:
-  brokerUrl: "tcp://localhost:61616"
+  brokerUrl: "tcp://13.95.5.15:61616"
   inboundQueueName: "inbound-queue-poc1"
   errorQueueName: "inbound-queue-poc1-error"
   

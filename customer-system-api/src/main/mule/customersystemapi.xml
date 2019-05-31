@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
     <http:listener-config name="customersystemapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${api.http.port}" />
     </http:listener-config>
+    <jms:config name="JMS_Config" doc:name="JMS Config" doc:id="133d10c4-793b-48a1-bf28-a6b6d07bc4aa" >
+		<jms:active-mq-connection username="admin" password="admin">
+			<jms:caching-strategy >
+				<jms:no-caching />
+			</jms:caching-strategy>
+			<jms:factory-configuration brokerUrl="${jms.brokerUrl}" />
+		</jms:active-mq-connection>
+	</jms:config>
     <apikit:config name="customersystemapi-config" raml="customersystemapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="e5d4776f-2a4e-4ab7-95c3-2602f8d56b08" >
 		<db:mssql-connection host="${db.host}" user="${db.user}" password="${db.password}" databaseName="db_poc_euw_mspoc002" />
@@ -154,22 +163,31 @@ vars.CustomerData]]></ee:set-payload>
     </flow>
     <flow name="post:\systemAPI\customer:customersystemapi-config">
 		<set-variable value="#[payload]" doc:name="Set Variable Payload to var" doc:id="f814eb13-3ea2-44f6-9014-fc79187367f3" variableName="requestPayload"/>
-		<db:insert doc:name="Insert" doc:id="5d243eba-7cbb-4304-a741-f21295e97c2b" config-ref="Database_Config" autoGenerateKeys="true" target="insertPayload">
-			<db:sql >INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)
+		<try doc:name="Try" doc:id="fae1684e-6a40-4cae-a1f3-c00977939796" >
+			<db:insert doc:name="Insert" doc:id="5d243eba-7cbb-4304-a741-f21295e97c2b" config-ref="Database_Config" autoGenerateKeys="true" target="insertPayload">
+			<db:sql>INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)
 VALUES (:firstName, :lastName, :dob, :gender, :email)</db:sql>
-			<db:input-parameters ><![CDATA[#[{
+			<db:input-parameters><![CDATA[#[{
 'firstName': payload.firstName,
 'lastName': payload.lastName,
 'dob': payload.dob,
 'gender': payload.gender,
 'email': payload.email
 }]]]></db:input-parameters>
-			<db:auto-generated-keys-column-indexes >
+			<db:auto-generated-keys-column-indexes>
 				<db:auto-generated-keys-column-index value="0" />
 			</db:auto-generated-keys-column-indexes>
 		</db:insert>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On customer insert error" doc:id="ebde58a5-f127-40ee-99ba-b0f09059d766" >
+					<logger level="INFO" doc:name="Logger" doc:id="7738a969-fafd-4e10-8b33-f84ef6cc60de" message="An error has occured while inserting the customer details. Please try again later."/>
+					<jms:publish doc:name="Publish" doc:id="ae4c8ede-fe8c-44fd-8f6d-acb33ba79637" config-ref="JMS_Config" destination="${jms.errorQueueName}"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
 		<logger level="INFO" doc:name="Logger2" doc:id="07ad7ebd-ddc0-4ae3-9f4b-57ec3d212154" message="Logger2--------------------- ++ #[vars.requestPayload] ---------------------#[vars.insertPayload.generatedKeys]"/>
-		<db:insert doc:name="Insert" doc:id="3a826628-ab9b-4db9-9f47-ffb8a7c17f7a" config-ref="Database_Config">
+		<try doc:name="Try" doc:id="792380cc-ae39-4862-95f8-78696a2d4bfa" >
+			<db:insert doc:name="Insert" doc:id="3a826628-ab9b-4db9-9f47-ffb8a7c17f7a" config-ref="Database_Config">
 			<db:sql>INSERT INTO ADDRESS (CUST_ID, ADDR_LN_1, ADDR_LN_2, CITY, ZIPCODE, LABEL)
 VALUES (:custid, :line1, :line2, :city, :zipcode, :label)</db:sql>
 				<db:input-parameters><![CDATA[#[{
@@ -180,14 +198,32 @@ VALUES (:custid, :line1, :line2, :city, :zipcode, :label)</db:sql>
 	'zipcode': vars.requestPayload.address.zipcode,
 	'label': vars.requestPayload.address.label
 }]]]></db:input-parameters>
+				<db:sql >INSERT INTO ADDRESS (CUST_ID, ADDR_LN_1, ADDR_LN_2, CITY, ZIPCODE, LABEL)
+VALUES (:custid, :line1, :line2, :city, :zipcode, :label)</db:sql>
+				<db:input-parameters ><![CDATA[#[{
+	'custid': vars.insertPayload.generatedKeys.GENERATED_KEYS,
+	'line1': vars.requestPayload.address.line1,
+	'line2': vars.requestPayload.address.line2,
+	'city': vars.requestPayload.address.city,
+	'zipcode': vars.requestPayload.address.zipcode,
+	'label': vars.requestPayload.address.label
+}]]]></db:input-parameters>
 		</db:insert>
-		<email:send doc:name="Send" doc:id="de1e5412-f87f-4954-9f33-b3300b3db509" config-ref="Email_SMTP" fromAddress="Abhinav.Sharma@capita.co.uk" subject="Successfully registered!" toAddresses="#[[vars.requestPayload.email]]">
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Address insert error" doc:id="d5e4b2a9-a62f-4689-bca9-5dbde3bedf32" >
+					<logger level="INFO" doc:name="Copy_of_Logger" doc:id="15b1a0d1-7305-46a9-9b59-9532e587d7d9" message="An error has occured while inserting the customer details. Please try later." />
+					<jms:publish doc:name="Copy_of_Publish" doc:id="3e3beb0e-cb55-4d63-a1fc-02bf6b0b6d04" config-ref="JMS_Config" destination="${jms.errorQueueName}" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<email:send doc:name="Send success message" doc:id="de1e5412-f87f-4954-9f33-b3300b3db509" config-ref="Email_SMTP" fromAddress="Abhinav.Sharma@capita.co.uk" subject="Successfully registered!" toAddresses="#[[vars.requestPayload.email]]">
 			<email:reply-to-addresses />
 			<email:body contentType="text/html" encoding="UTF-8">
 				<email:content ><![CDATA[#["Thank you for registering"]]]></email:content>
 			</email:body>
 		</email:send>
-		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7ecd9de9-e314-4f94-9ddc-0e0f14005b53">
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="7ecd9de9-e314-4f94-9ddc-0e0f14005b53">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -198,4 +234,13 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
+	<flow name="Errorqueuemailtrigger" doc:id="3270cf64-e7e4-40ad-b7f4-c6798111de2a" >
+		<jms:listener doc:name="Listener" doc:id="d752db28-bd8e-4aac-9fb9-58fc934ac3ca" config-ref="JMS_Config" destination="${jms.errorQueueName}"/>
+		<email:send doc:name="Send error message" doc:id="fe953f1c-d83b-4161-9ed5-f1be7808ddc3" config-ref="Email_SMTP" fromAddress="Abhinav.Sharma@capita.co.uk" subject="Successfully registered!" toAddresses="#[[payload.email]]" >
+			<email:reply-to-addresses />
+			<email:body contentType="text/html" encoding="UTF-8" >
+				<email:content ><![CDATA[#["An error occured while saving your data. Please try again later."]]]></email:content>
+			</email:body>
+		</email:send>
+	</flow>
 </mule>

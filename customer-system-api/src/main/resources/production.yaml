@@ -1,7 +1,7 @@
 api:
   http:
     host: "0.0.0.0"
-    port: "8081"
+    port: "8082"
     
 db:
   host: "dbs-poc-euw-mspoc002.database.windows.net"
