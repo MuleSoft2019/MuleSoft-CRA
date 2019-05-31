@@ -34,8 +34,7 @@
 						<environment>Sandbox</environment>
 						<businessGroup>mspoc</businessGroup>
 						<properties>
-							<key>mule.env</key>
-							<value>${mule.env}</value>
+							<mule.env>${mule.env}</mule.env>
 						</properties>
 					</cloudHubDeployment>
 				<sharedLibraries>
