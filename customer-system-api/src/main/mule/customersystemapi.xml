@@ -4,15 +4,17 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
     <http:listener-config name="customersystemapi-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+        <http:listener-connection host="0.0.0.0" port="${api.http.port}" />
     </http:listener-config>
     <apikit:config name="customersystemapi-config" raml="customersystemapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="e5d4776f-2a4e-4ab7-95c3-2602f8d56b08" >
-		<db:mssql-connection host="dbs-poc-euw-mspoc002.database.windows.net" user="mspoc002" password="qInmyp7h" databaseName="db_poc_euw_mspoc002" />
+		<db:mssql-connection host="${db.host}" user="${db.user}" password="${db.password}" databaseName="db_poc_euw_mspoc002" />
 	</db:config>
 	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="24c42a2f-d2ff-4c9e-9878-08c009110e4e" >
-		<email:smtp-connection host="smtp.sendgrid.net" user="azure_cfae296f3c2574deb7e64b7dc4b345cf@azure.com" password="jycAW3941WNY" />
+		<email:smtp-connection host="${smtp.host}" user="${smtp.user}" password="${smtp.password}" />
 	</email:smtp-config>
+	<global-property doc:name="Global Property" doc:id="90057a54-b861-4467-aa55-45b8fb835b31" name="mule.env" value="local" />
+	<configuration-properties doc:name="Configuration properties" doc:id="a7a66821-000b-468e-86cd-69e08dd46d7d" file="${mule.env}.yaml" />
 	<flow name="customersystemapi-main">
         <http:listener config-ref="customersystemapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -151,7 +153,6 @@ vars.CustomerData]]></ee:set-payload>
 		<logger level="INFO" doc:name="Logger" doc:id="cbeccede-8038-42f6-af66-8106669c33d0" message="#[payload]"/>
     </flow>
     <flow name="post:\systemAPI\customer:customersystemapi-config">
-        <logger level="INFO" doc:name="Logger1" doc:id="1f68d663-c3e9-44f3-a398-7c42caced79f" message="Logger1--------------------- ++ #[payload]"/>
 		<set-variable value="#[payload]" doc:name="Set Variable Payload to var" doc:id="f814eb13-3ea2-44f6-9014-fc79187367f3" variableName="requestPayload"/>
 		<db:insert doc:name="Insert" doc:id="5d243eba-7cbb-4304-a741-f21295e97c2b" config-ref="Database_Config" autoGenerateKeys="true" target="insertPayload">
 			<db:sql >INSERT INTO customer (FIRST_NAME, LAST_NAME, DOB, GENDER, EMAIL)

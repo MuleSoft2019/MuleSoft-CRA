@@ -1,0 +1,21 @@
+api:
+  http:
+    host: "localhost"
+    port: "7071"
+    
+db:
+  host: "dbs-poc-euw-mspoc002.database.windows.net"
+  user: "mspoc002"
+  password: "qInmyp7h"
+  
+jms:
+  brokerUrl: "tcp://localhost:61616"
+  inboundQueueName: "inbound-queue-poc1"
+  errorQueueName: "inbound-queue-poc1-error"
+  
+url:
+  businessService: "mulewebclient.azurewebsites.net"
+  experienceApi: "customer-exp-api.us-e1.cloudhub.io"
+  processApi: "customer-reg-process-api.us-w1.cloudhub.io"
+  systemApi: "customer-system-api.us-w1.cloudhub.io"
+  
