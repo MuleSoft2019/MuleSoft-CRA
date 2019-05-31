@@ -123,7 +123,7 @@
 								<muleVersion>4.2.0</muleVersion>
 								<username>${anypoint.username}</username>
 								<password>${anypoint.password}</password>
-								<applicationName>customerexp-api-rtf</applicationName>
+								<applicationName>customer-exp-api</applicationName>
 								<target>mspoc_capita_rtf</target>
 								<environment>Sandbox</environment>
 								<businessGroup>mspoc</businessGroup>
