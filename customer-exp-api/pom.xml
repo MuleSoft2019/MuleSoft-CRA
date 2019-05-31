@@ -127,7 +127,6 @@
 								<target>mspoc_capita_rtf</target>
 								<environment>Sandbox</environment>
 								<businessGroup>mspoc</businessGroup>
-								<provider>MC</provider>
 								<properties>
 									<mule.env>${mule.env}</mule.env>
 								</properties>
