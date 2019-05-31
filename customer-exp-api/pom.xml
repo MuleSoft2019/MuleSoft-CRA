@@ -31,10 +31,11 @@
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
 						<applicationName>customer-exp-api</applicationName>
-						<environment>production</environment>
+						<environment>sandbox</environment>
 						<businessGroup>mspoc</businessGroup>
 						<properties>
 							<key>value</key>
+							<env>${mule.env}</env>
 						</properties>
 					</cloudHubDeployment>
 				<sharedLibraries>
