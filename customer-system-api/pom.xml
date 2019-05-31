@@ -36,6 +36,7 @@
 						<businessGroup>mspoc</businessGroup>
 						<properties>
 							<key>value</key>
+							<env>${mule.env}</env>
 						</properties>
 					</cloudHubDeployment>
 				<sharedLibraries>
