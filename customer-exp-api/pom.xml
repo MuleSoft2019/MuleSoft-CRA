@@ -5,7 +5,7 @@
 
 	<groupId>dca5c6ff-6213-4458-bf2e-4c816d0f2459</groupId>
 	<artifactId>customer-exp-api</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.4</version>
 	<packaging>mule-application</packaging>
 
 	<name>customer-exp-api</name>
@@ -123,7 +123,7 @@
 								<muleVersion>4.2.0</muleVersion>
 								<username>${anypoint.username}</username>
 								<password>${anypoint.password}</password>
-								<applicationName>customer-exp-api</applicationName>
+								<applicationName>customer-exp-apirtf</applicationName>
 								<target>mspoc_capita_rtf</target>
 								<environment>Sandbox</environment>
 								<businessGroup>mspoc</businessGroup>
